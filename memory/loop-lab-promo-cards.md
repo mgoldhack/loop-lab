@@ -19,4 +19,6 @@ Promo cards for the Loop Lab demo recording (`docs/Loop Lab Recording.skbundle`)
 2. Title is prepended in the `.skbundle` (re-render only if changing it); export the project: `screenkite agent tool call --name exportArtifact --input-json '{"type":"project_video","path":"...mov"}' --json`
 3. ffmpeg concat the end card after the export (scale 1330×748, add `anullsrc` silent audio for the 5s, concat filter → h264/aac). The exact command is in the session transcript.
 
+**Title card audio:** HyperFrames renders are silent, so the title's loop sounds are added at the ffmpeg stage. Snippets are extracted from the recording's `system_audio_0.m4a` (no mic → pure loop audio): Liquid 909 loops play ~33–68s, Gangster Rap ~108–129s in that file. A 7s bed (Liquid @1.1s, Gangster @3.4s, matching the typing) is `amix`ed onto the final's first 7s. Snippets/bed live in `~/ScreenKiteWorkspace/loop-lab-cards/audio/`.
+
 The end card can't live in the ScreenKite project — see [[screenkite-trailing-card-limitation]]. Drive ScreenKite via [[screenkite-use-cli]].

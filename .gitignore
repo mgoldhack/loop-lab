@@ -9,5 +9,11 @@ outputs/
 *.wav
 manifest.json
 
+# Large media (recordings, renders — host via GitHub CDN/Release/LFS, not git)
+*.mp4
+*.mov
+*.m4a
+*.skbundle/
+
 # macOS
 .DS_Store
