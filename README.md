@@ -10,6 +10,15 @@ line each time.
 > command under the hood; it does not include or modify Magenta itself. You
 > install magenta-rt separately (see below). Not affiliated with Google.
 
+## Demo
+
+A 2½-minute walkthrough — generating loops from two prompts ("Liquid 909" and
+"Gangster Rap"), auditioning them, and saving the keepers:
+
+<!-- ⬇️ Drag docs/loop-lab-demo.mp4 onto the line below in GitHub's README editor.
+     GitHub replaces it with a https://github.com/user-attachments/assets/… URL that renders as a player. -->
+https://github.com/user-attachments/assets/REPLACE_ME
+
 ![A prompt box, four faders (outputs, length, randomness, complexity), and a
 list of generated loops with waveforms.](docs/screenshot.png)
 
