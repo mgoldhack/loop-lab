@@ -14,7 +14,8 @@ Magenta itself.
 - `requirements.txt` — Python dependencies
 - `docs/` — `screenshot.png` (UI reference), `Loop Lab Recording.skbundle` /
   `.mov` (demo screen recording), `Loop Lab - final.mp4` (recording with title +
-  end cards), promo-card sources live in `~/ScreenKiteWorkspace/loop-lab-cards/`
+  end cards), `loop-lab-demo.mp4` (4.6 MB web/README version); promo-card sources
+  live in `~/ScreenKiteWorkspace/loop-lab-cards/`
 
 ## Critical rules
 - **Unofficial / not affiliated with Google.** Keep that framing in any

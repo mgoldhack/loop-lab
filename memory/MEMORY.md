@@ -5,3 +5,4 @@ _Entries below are pointers to memory files in this directory. Each file holds o
 - [ScreenKite — use the CLI](screenkite-use-cli.md) — drive ScreenKite via `screenkite agent`, not the broken v1.8.1 MCP server
 - [ScreenKite — trailing card limitation](screenkite-trailing-card-limitation.md) — prepend works, append doesn't; finish the end card with ffmpeg
 - [Loop Lab promo cards](loop-lab-promo-cards.md) — title/end card sources + how to re-render and re-assemble the final video
+- [GitHub README video](github-readme-video.md) — embed via drag-drop to user-attachments; ~10MB silent limit; compress with ffmpeg

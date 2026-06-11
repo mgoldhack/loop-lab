@@ -1,5 +1,11 @@
 # Session Log
 
+## 2026-06-11 — README demo video + GitHub embed
+- Compressed `docs/Loop Lab - final.mp4` (13 MB) → **`docs/loop-lab-demo.mp4`** (4.6 MB, 1280×720, CRF 28, faststart) so it fits GitHub's video attachment limit (~10 MB; the 13 MB original was silently rejected when dragged into the README editor).
+- Added a **Demo** section to `README.md` with a `REPLACE_ME` placeholder URL and a kept screenshot fallback (commit `6b3ca23`).
+- **To finish (user, on github.com):** push, then drag `docs/loop-lab-demo.mp4` onto the placeholder line in GitHub's README editor so it becomes a `github.com/user-attachments/assets/…` URL; commit only after the real URL replaces `REPLACE_ME`.
+- `loop-lab-demo.mp4` left untracked on purpose — the embed hosts it on GitHub's CDN, no need to bloat the repo.
+
 ## 2026-06-11 — Project initiated + promo video cards
 - Project structure scaffolded (CLAUDE.md, SESSION_LOG.md, memory palace; git already existed on `main`).
 - Built two animated promo cards for the demo screen recording (`docs/Loop Lab Recording.skbundle`):
