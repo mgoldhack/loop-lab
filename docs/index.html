@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loop Lab — links</title>
+  <meta name="description" content="Loop Lab — generate music loops locally with Magenta RealTime 2 on Apple Silicon." />
+  <!-- social preview -->
+  <meta property="og:title" content="Loop Lab" />
+  <meta property="og:description" content="Generate music loops locally on your Mac with Magenta RealTime 2." />
+  <meta property="og:image" content="screenshot.png" />
+  <style>
+    :root{
+      --mag:#EC1E8C; --mag-2:#FF52AD; --bg:#0e0d13; --card:#16171f;
+      --line:#262834; --muted:#8a8f9c; --text:#f4f5f7;
+      --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      min-height:100vh; color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+      background:
+        radial-gradient(900px 600px at 50% -10%, #1a1320 0%, var(--bg) 55%, #08080e 100%) fixed;
+      display:flex; justify-content:center;
+      padding:56px 20px 40px;
+    }
+    .wrap{width:100%; max-width:480px; display:flex; flex-direction:column; align-items:center}
+
+    /* waveform motif */
+    .wave{display:flex; align-items:center; gap:5px; height:46px; margin-bottom:26px; opacity:.9}
+    .wave i{width:5px; border-radius:3px; background:linear-gradient(180deg,var(--mag-2),var(--mag)); display:block}
+
+    .wordmark{font-weight:800; font-size:clamp(40px,12vw,58px); letter-spacing:.12em; line-height:1}
+    .wordmark .o{color:var(--mag)}
+    .tag{font-family:var(--mono); font-size:14px; color:var(--muted); letter-spacing:.08em; margin-top:14px; text-align:center}
+    .blurb{font-size:15px; color:#c6cad3; margin-top:16px; text-align:center; line-height:1.5; max-width:360px}
+
+    .links{width:100%; margin-top:34px; display:flex; flex-direction:column; gap:14px}
+    .btn{
+      display:flex; align-items:center; gap:14px;
+      background:var(--card); border:1px solid var(--line); border-radius:16px;
+      padding:18px 20px; color:var(--text); text-decoration:none; font-size:16px; font-weight:600;
+      transition:transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+    .btn:hover{
+      transform:translateY(-2px); border-color:var(--mag);
+      background:#1b1c26; box-shadow:0 10px 30px rgba(236,30,140,.22);
+    }
+    .btn .ico{
+      flex:0 0 auto; width:38px; height:38px; border-radius:10px;
+      display:grid; place-items:center; font-size:18px;
+      background:rgba(236,30,140,.12); color:var(--mag);
+    }
+    .btn .arrow{margin-left:auto; color:var(--muted); transition:transform .15s ease, color .15s ease}
+    .btn:hover .arrow{transform:translateX(3px); color:var(--mag)}
+    .btn .sub{display:block; font-size:12px; font-weight:500; color:var(--muted); margin-top:2px}
+
+    .foot{margin-top:30px; font-family:var(--mono); font-size:11.5px; color:var(--muted); text-align:center; line-height:1.6}
+    .foot a{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="wave" aria-hidden="true">
+      <i style="height:14px"></i><i style="height:28px"></i><i style="height:20px"></i>
+      <i style="height:40px"></i><i style="height:24px"></i><i style="height:46px"></i>
+      <i style="height:30px"></i><i style="height:42px"></i><i style="height:18px"></i>
+      <i style="height:34px"></i><i style="height:22px"></i><i style="height:38px"></i>
+    </div>
+
+    <div class="wordmark">LO<span class="o">O</span>P&nbsp;LAB</div>
+    <div class="tag">magenta rt2 · local</div>
+    <p class="blurb">Generate and curate short music loops locally on your Mac — type a prompt, pull four faders, keep the good ones.</p>
+
+    <nav class="links">
+      <!-- ▶ replace href with your YouTube video/channel URL -->
+      <a class="btn" href="https://youtube.com/REPLACE_WITH_YOUR_VIDEO" target="_blank" rel="noopener">
+        <span class="ico">▶</span>
+        <span>Watch the demo<span class="sub">2-minute walkthrough on YouTube</span></span>
+        <span class="arrow">→</span>
+      </a>
+
+      <a class="btn" href="https://github.com/mgoldhack/loop-lab" target="_blank" rel="noopener">
+        <span class="ico">&#9001;&#9002;</span>
+        <span>Code on GitHub<span class="sub">github.com/mgoldhack/loop-lab · MIT</span></span>
+        <span class="arrow">→</span>
+      </a>
+
+      <!-- ◎ replace href with your Instagram profile URL -->
+      <a class="btn" href="https://instagram.com/REPLACE_WITH_YOUR_HANDLE" target="_blank" rel="noopener">
+        <span class="ico">◎</span>
+        <span>Follow on Instagram<span class="sub">clips &amp; updates</span></span>
+        <span class="arrow">→</span>
+      </a>
+
+      <a class="btn" href="https://github.com/magenta/magenta-realtime" target="_blank" rel="noopener">
+        <span class="ico">♪</span>
+        <span>Magenta RealTime<span class="sub">the model under the hood (Google)</span></span>
+        <span class="arrow">→</span>
+      </a>
+    </nav>
+
+    <p class="foot">
+      Unofficial · not affiliated with Google.<br/>
+      Magenta RealTime is Google's (Apache-2.0).
+    </p>
+  </main>
+</body>
+</html>
