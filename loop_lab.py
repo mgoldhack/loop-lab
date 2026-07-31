@@ -27,6 +27,7 @@ import shutil
 import subprocess
 import threading
 import time
+import wave
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, request, send_from_directory
@@ -284,16 +285,46 @@ def api_clips():
     return jsonify(clips=clips, keepers=pretty_path(KEEPERS_DIR))
 
 
+def crop_wav(src, dst, start_frac, end_frac):
+    """Write the [start_frac, end_frac] slice of a WAV to dst (sample-accurate)."""
+    with wave.open(str(src), "rb") as w:
+        n = w.getnframes()
+        s = max(0, min(n, int(round(start_frac * n))))
+        e = max(s, min(n, int(round(end_frac * n))))
+        w.setpos(s)
+        frames = w.readframes(e - s)
+        with wave.open(str(dst), "wb") as out:
+            out.setnchannels(w.getnchannels())
+            out.setsampwidth(w.getsampwidth())
+            out.setframerate(w.getframerate())
+            out.writeframes(frames)
+
+
 @app.post("/api/keep")
 def api_keep():
     data = request.get_json(force=True)
     files = data.get("files", [])
+    regions = data.get("regions") or {}
     saved = 0
     for name in files:
         if "/" in name or ".." in name:
             continue
         src = LIBRARY_DIR / name
-        if src.exists():
+        if not src.exists():
+            continue
+        reg = regions.get(name)
+        if reg and float(reg.get("end", 0)) > float(reg.get("start", 0)):
+            sf = max(0.0, float(reg["start"]))
+            ef = min(1.0, float(reg["end"]))
+            try:
+                with wave.open(str(src), "rb") as w:
+                    dur = w.getnframes() / float(w.getframerate())
+                dst = KEEPERS_DIR / f"{src.stem}_{sf*dur:.1f}-{ef*dur:.1f}s{src.suffix}"
+                crop_wav(src, dst, sf, ef)
+                saved += 1
+            except Exception:
+                pass
+        else:
             shutil.copy2(str(src), str(KEEPERS_DIR / name))
             saved += 1
     return jsonify(ok=True, saved=saved, dest=pretty_path(KEEPERS_DIR))
@@ -330,7 +361,7 @@ PAGE = r"""<!doctype html>
 <style>
   :root{
     --bg:#15171c; --panel:#1d2027; --panel2:#23272f; --line:#2e333d;
-    --text:#e9e7e1; --dim:#8b9097; --mag:#d6418f; --mag-soft:#d6418f33;
+    --text:#e9e7e1; --dim:#a5aab2; --mag:#d6418f; --mag-soft:#d6418f33;
     --amber:#d9a441; --red:#c25b4e;
     --mono:"SF Mono",ui-monospace,Menlo,monospace;
     --sans:-apple-system,"Helvetica Neue",Arial,sans-serif;
@@ -349,12 +380,13 @@ PAGE = r"""<!doctype html>
            border-radius:10px;padding:18px}
   .promptrow{display:flex;gap:10px}
   #prompt{flex:1;background:var(--panel2);border:1px solid var(--line);
-          border-radius:8px;color:var(--text);font:15px var(--sans);
+          border-radius:8px;color:#f7f6f3;font:15px var(--sans);
           padding:12px 14px;outline:none}
   #prompt:focus{border-color:var(--mag)}
+  #prompt::placeholder{color:var(--amber);opacity:.85}
   button{cursor:pointer;border:none;border-radius:8px;
          font:600 13px var(--sans);letter-spacing:.04em}
-  #go{background:var(--mag);color:#1a0d16;padding:0 26px}
+  #go{background:var(--mag);color:var(--text);padding:0 26px}
   #go:disabled{background:var(--line);color:var(--dim);cursor:default}
 
   /* fader bank */
@@ -373,7 +405,7 @@ PAGE = r"""<!doctype html>
   .modeline{display:flex;justify-content:space-between;align-items:center;
             margin-top:14px;font-family:var(--mono);font-size:11px;
             color:var(--dim)}
-  .modeline select{background:var(--panel2);color:var(--text);
+  .modeline select{background:var(--panel2);color:var(--amber);
             border:1px solid var(--line);border-radius:6px;
             font:11px var(--mono);padding:4px 6px}
 
@@ -382,6 +414,7 @@ PAGE = r"""<!doctype html>
           color:var(--dim);min-height:16px}
   #status.err{color:var(--red)}
   #status.run{color:var(--amber)}
+  #status.ok{color:#f2ca4c;font-weight:600}
   .bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;
        margin-bottom:18px}
   .bar i{display:block;height:100%;width:0;background:var(--mag);
@@ -397,6 +430,10 @@ PAGE = r"""<!doctype html>
   .clip button.play.on{background:var(--mag);color:#1a0d16}
   .clip .wave{position:relative;flex:1;height:38px;min-width:0}
   .clip canvas{position:absolute;inset:0;height:38px;width:100%}
+  .clip .wave{cursor:crosshair}
+  .clip .sel{position:absolute;top:0;bottom:0;background:var(--mag-soft);
+         border-left:2px solid var(--mag);border-right:2px solid var(--mag);
+         pointer-events:none;display:none}
   .clip .playhead{position:absolute;top:0;left:0;width:2px;height:100%;
         background:var(--amber);box-shadow:0 0 6px var(--amber);
         pointer-events:none;transition:left .05s linear}
@@ -417,6 +454,27 @@ PAGE = r"""<!doctype html>
   #keepdest{font-family:var(--mono);font-size:10px;color:var(--dim)}
   #save{background:var(--mag);color:#1a0d16;padding:8px 16px}
   #save:disabled{background:var(--line);color:var(--dim);cursor:default}
+  #delsel{background:transparent;border:1px solid #c25b4e55;color:var(--red);padding:8px 16px}
+  #delsel:hover:not(:disabled){background:#c25b4e22}
+  #delsel:disabled{background:var(--line);border-color:transparent;color:var(--dim);cursor:default}
+  .guide{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+         margin:0 0 14px;font-size:13px;color:var(--dim)}
+  .guide>summary{cursor:pointer;list-style:none;padding:11px 16px;
+         font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim)}
+  .guide>summary::-webkit-details-marker{display:none}
+  .guide>summary::before{content:"▸ ";color:var(--mag);font-size:16px;vertical-align:-1px}
+  .guide[open]>summary::before{content:"▾ "}
+  .guide>summary:hover{color:var(--text)}
+  .guide .gbody{padding:2px 18px 16px;line-height:1.55}
+  .guide .gbody h4{color:var(--text);font-family:var(--mono);font-size:10px;
+         letter-spacing:.12em;margin:16px 0 6px;font-weight:600}
+  .guide .gbody b{color:var(--text);font-weight:600}
+  .guide .gbody i{color:var(--dim);font-style:italic}
+  .guide .gbody code{font-family:var(--mono);font-size:12px;color:var(--mag);
+         background:var(--panel2);padding:1px 5px;border-radius:4px}
+  .guide .gbody ul{margin:4px 0;padding-left:18px}
+  .guide .gbody li{margin:3px 0}
+  .guide .gbody p{margin:4px 0}
   .clip .pick{flex:none;width:17px;height:17px;accent-color:var(--mag);
          cursor:pointer}
   .clip.saved{border-color:var(--mag-soft)}
@@ -465,6 +523,32 @@ PAGE = r"""<!doctype html>
     </div>
   </div>
 
+  <details class="guide">
+    <summary>guide</summary>
+    <div class="gbody">
+      <h4>THE FADERS</h4>
+      <ul>
+        <li><b>Outputs</b> — how many variations you get in one batch.</li>
+        <li><b>Length</b> — clip length in seconds.</li>
+        <li><b>Randomness</b> — higher wanders further from the obvious take; lower stays safe and repeatable.</li>
+        <li><b>Complexity</b> — higher is busier, more ideas at once; lower is sparser and steadier.</li>
+      </ul>
+      <h4>WRITING PROMPTS</h4>
+      <ul>
+        <li>Lead with genre and feel: <code>dusty boom-bap drum loop, warm sub</code>.</li>
+        <li>To steer away from singing, start with <code>instrumental</code> and lean on cues like <i>drum loop, percussion, dub techno, ambient</i>.</li>
+        <li>Words like <i>soul, pop, gospel, anthem</i> invite vocals — skip them if you want none.</li>
+      </ul>
+      <h4>ABOUT VOCALS</h4>
+      <p>Magenta sometimes adds mumbled vocal artefacts even on instrumental prompts — it's a quirk of the model, and no fader removes it. If a clip is good apart from that, crop a clean bar or two in your DAW.</p>
+      <h4>KEEPING &amp; BINNING</h4>
+      <ul>
+        <li>Tick the good ones, then <b>Save selected</b> — they copy to your keep folder.</li>
+        <li><b>Delete selected</b> bins the rest; deleted clips go to the Trash, so they're recoverable.</li>
+      </ul>
+    </div>
+  </details>
+
   <div id="status"></div>
   <div class="bar"><i id="barfill"></i></div>
 
@@ -472,6 +556,7 @@ PAGE = r"""<!doctype html>
     <label class="selall"><input type="checkbox" id="selall"> select all</label>
     <span id="toolspacer"></span>
     <span id="keepdest"></span>
+    <button id="delsel" disabled>Delete selected</button>
     <button id="save" disabled>Save selected</button>
   </div>
   <div id="clips"></div>
@@ -513,12 +598,15 @@ function setStatus(msg, cls){ const s=$("status");
   s.textContent = msg; s.className = cls || ""; }
 
 const selected = new Set();
+const regions = new Map();  // file -> {start, end} as 0..1 fractions of the clip
 let keepDest = "";
 
 function refreshToolbar(){
   const n = selected.size;
   $("save").disabled = n === 0;
   $("save").textContent = n ? `Save ${n} selected` : "Save selected";
+  $("delsel").disabled = n === 0;
+  $("delsel").textContent = n ? `Delete ${n} selected` : "Delete selected";
   const boxes = document.querySelectorAll(".clip .pick");
   const all = boxes.length > 0 && [...boxes].every(b => b.checked);
   $("selall").checked = all;
@@ -536,12 +624,29 @@ $("selall").addEventListener("change", () => {
 $("save").addEventListener("click", async () => {
   if (!selected.size) return;
   $("save").disabled = true;
+  const regObj = {};
+  for (const f of selected) if (regions.has(f)) regObj[f] = regions.get(f);
   const r = await fetch("/api/keep", {method:"POST",
     headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({files:[...selected]})});
+    body: JSON.stringify({files:[...selected], regions: regObj})});
   const j = await r.json();
   if (j.error){ setStatus(j.error, "err"); }
-  else { setStatus(`Saved ${j.saved} to ${j.dest}`); selected.clear(); }
+  else { setStatus(`Saved ${j.saved} to ${j.dest}`, "ok"); selected.clear(); }
+  loadClips();
+});
+
+$("delsel").addEventListener("click", async () => {
+  if (!selected.size) return;
+  const files = [...selected];
+  if (!confirm(`Delete ${files.length} clip${files.length>1?"s":""}? (moved to Trash)`)) return;
+  $("delsel").disabled = true;
+  if (currentFile && files.includes(currentFile)) stopPlayback();
+  for (const f of files){
+    regions.delete(f);
+    await fetch("/api/clips/" + encodeURIComponent(f), {method:"DELETE"});
+  }
+  selected.clear();
+  setStatus(`Deleted ${files.length} to Trash`);
   loadClips();
 });
 
@@ -571,7 +676,7 @@ async function loadClips(){
   if (j.keepers){ keepDest = j.keepers; $("keepdest").textContent = "→ " + j.keepers; }
   const box = $("clips"); box.innerHTML = "";
   if (!j.clips.length){
-    box.innerHTML = '<div class="empty">no clips yet — type a prompt and pull a fader</div>';
+    box.innerHTML = '<div class="empty">no clips yet — type a prompt and slide a fader</div>';
     if (currentFile) stopPlayback();
     refreshToolbar();
     return;
@@ -621,8 +726,9 @@ function clipRow(c){
   play.className = "play"; play.textContent = "▶";
   const wave = document.createElement("div"); wave.className = "wave";
   const cv = document.createElement("canvas");
+  const sel = document.createElement("div"); sel.className = "sel";
   const ph = document.createElement("div"); ph.className = "playhead";
-  wave.append(cv, ph);
+  wave.append(cv, sel, ph);
   const meta = document.createElement("div"); meta.className = "meta";
   meta.innerHTML = `${c.prompt.slice(0,28)}<br>t ${c.temp} · k ${c.top_k} · ${c.duration|0}s`;
   const tick = document.createElement("div"); tick.className = "tick";
@@ -635,11 +741,53 @@ function clipRow(c){
   const url = "/clips/" + encodeURIComponent(c.file);
   drawWave(cv, url);
 
+  // --- region selection (drag on the waveform) ---
+  function paintSel(){
+    const r = regions.get(c.file);
+    if (r){ sel.style.display = "block"; sel.style.left = (r.start*100)+"%";
+            sel.style.width = ((r.end-r.start)*100)+"%"; }
+    else { sel.style.display = "none"; }
+  }
+  paintSel();
+  let dragging = false, dragStart = 0, moved = false;
+  const fracAt = e => {
+    const rect = wave.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  };
+  wave.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    dragging = true; moved = false; dragStart = fracAt(e); wave.setPointerCapture(e.pointerId);
+  });
+  wave.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const x = fracAt(e);
+    if (Math.abs(x - dragStart) > 0.004) moved = true;
+    if (moved){ regions.set(c.file, {start: Math.min(dragStart, x), end: Math.max(dragStart, x)}); paintSel(); }
+  });
+  wave.addEventListener("pointerup", () => {
+    dragging = false;
+    if (!moved){ regions.delete(c.file); paintSel(); }  // a plain click (no drag) always clears
+    else { const r = regions.get(c.file); if (r && (r.end - r.start) < 0.01){ regions.delete(c.file); paintSel(); } }
+    if (currentFile === c.file && currentAudio) currentAudio.loop = !regions.get(c.file);
+  });
+
   play.addEventListener("click", () => {
     if (currentBtn === play){ stopPlayback(); return; }
     stopPlayback();
     currentAudio = new Audio(url); currentBtn = play; currentFile = c.file;
-    currentAudio.loop = true;
+    const reg = regions.get(c.file);
+    currentAudio.loop = !reg;  // whole-clip loop only when no region is set
+    if (reg) currentAudio.addEventListener("loadedmetadata", () => {
+      currentAudio.currentTime = reg.start * currentAudio.duration;
+    });
+    currentAudio.addEventListener("timeupdate", () => {
+      if (!currentAudio) return;
+      const r = regions.get(c.file);
+      if (r){
+        const d = currentAudio.duration || c.duration;
+        if (currentAudio.currentTime >= r.end * d) currentAudio.currentTime = r.start * d;
+      }
+    });
     currentAudio.play();
     play.classList.add("on"); play.textContent = "■";
     startPlayhead(ph, c.duration);
@@ -647,7 +795,7 @@ function clipRow(c){
 
   del.addEventListener("click", async () => {
     if (currentBtn === play) stopPlayback();
-    selected.delete(c.file);
+    selected.delete(c.file); regions.delete(c.file);
     await fetch("/api/clips/" + encodeURIComponent(c.file), {method:"DELETE"});
     loadClips();
   });
