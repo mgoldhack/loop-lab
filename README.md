@@ -39,6 +39,11 @@ list of generated loops with waveforms.](docs/screenshot.png)](https://www.youtu
 - **Matched levels.** Every clip is loudness-normalised on generation, so
   drums and synths come out at a consistent volume.
 
+Drag across a clip to loop just that region — and saving crops to it:
+
+![A generated clip with part of its waveform highlighted; playback loops just
+that region, and Save writes only that slice.](docs/crop-region.png)
+
 ## Requirements
 
 - An **Apple Silicon Mac** (M1 or later). Magenta RealTime's MLX backend does
