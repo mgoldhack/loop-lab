@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-07-31 — Region crop-loop, guide panel, delete-selected, UI polish; docs + push
+
+**Files changed:**
+- `loop_lab.py` — waveform **region select** (drag) + loop-just-that-region playback; **crop-on-save** via stdlib `wave` (region-aware `/api/keep`, sample-accurate; crop lands under a `_<start>-<end>s.wav` name); **`Delete selected`** button (bins to Trash); collapsible **`guide`** panel; colour/legibility pass (brighter `--dim` grey `#8b9097`→`#a5aab2`, brighter prompt text `#f7f6f3`, yellow placeholder + model text, white "Generate", bigger pink guide triangle, yellow bold "Saved" status, "slide a fader" copy). A `CHARACTER` fader (CFG+top-k combined) was tried then **reverted to `Complexity`** — CFG (`--cfg-musiccoca`) only amplifies prompt adherence, it does **not** remove MRT's mumbled vocal artefacts (model limitation, no fader fixes it). Committed `cc2077b`.
+- `README.md` — documented region loop, crop-on-save, guide, and the loop-gap caveat. Committed `57f9858`.
+- `docs/screenshot.png` — refreshed hero screenshot to the new UI (headless-Chrome capture, needed a long `--virtual-time-budget` for the Web-Audio waveforms to render). Committed `57f9858`.
+- `docs/crop-region.png` — added; user-supplied shot showing a selected region. Committed `93c2859`.
+
+**Git:** local `main` had diverged from GitHub (7 unpushed commits locally vs 2 browser-made README edits on github.com). Reconciled with `push --force-with-lease` (local is source of truth; the 2 remote edits were a trivial demo-section re-indent), then normal pushes. `main` now in sync with `origin/main`.
+
+**Still to do:**
+- `docs/index.html` has an unrelated pre-session uncommitted edit — left alone this session.
+- Possible niceties: draggable region edge handles; show region length in the clip meta line.
+
 ## 2026-06-11 — README demo video + GitHub embed
 - Compressed `docs/Loop Lab - final.mp4` (13 MB) → **`docs/loop-lab-demo.mp4`** (4.6 MB, 1280×720, CRF 28, faststart) so it fits GitHub's video attachment limit (~10 MB; the 13 MB original was silently rejected when dragged into the README editor).
 - Added a **Demo** section to `README.md` with a `REPLACE_ME` placeholder URL and a kept screenshot fallback (commit `6b3ca23`).
