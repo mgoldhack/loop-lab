@@ -788,6 +788,13 @@ function clipRow(c){
         if (currentAudio.currentTime >= r.end * d) currentAudio.currentTime = r.start * d;
       }
     });
+    currentAudio.addEventListener("ended", () => {
+      const r = regions.get(c.file);   // region ending at the clip end: loop back on 'ended'
+      if (currentAudio && r){
+        currentAudio.currentTime = r.start * (currentAudio.duration || c.duration);
+        currentAudio.play();
+      }
+    });
     currentAudio.play();
     play.classList.add("on"); play.textContent = "■";
     startPlayhead(ph, c.duration);
