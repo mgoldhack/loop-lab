@@ -15,12 +15,10 @@ line each time.
 A 2½-minute walkthrough — generating loops from two prompts ("Liquid 909" and
 "Gangster Rap"), auditioning them, and saving the keepers:
 
-<!-- ⬇️ Drag docs/loop-lab-demo.mp4 onto the line below in GitHub's README editor.
-     GitHub replaces it with a https://github.com/user-attachments/assets/… URL that renders as a player. -->
-https://github.com/user-attachments/assets/REPLACE_ME
+[![A prompt box, four faders (outputs, length, randomness, complexity), and a
+list of generated loops with waveforms.](docs/screenshot.png)](https://www.youtube.com/watch?v=P4C_2XStpJY&t=4s)
 
-![A prompt box, four faders (outputs, length, randomness, complexity), and a
-list of generated loops with waveforms.](docs/screenshot.png)
+▶ **[Watch the demo on YouTube](https://www.youtube.com/watch?v=P4C_2XStpJY&t=4s)** (or click the image above).
 
 ## What it does
 
@@ -31,8 +29,13 @@ list of generated loops with waveforms.](docs/screenshot.png)
 - **Four faders, real units.** Outputs (clip count), Length (seconds),
   Randomness (sampling temperature), Complexity (top-k).
 - **Audition in the browser.** Looping playback with a waveform and playhead.
+  Drag across a clip's waveform to select part of it and loop just that region.
+- **Crop on save.** With a region selected, saving writes just that part
+  (sample-accurate); with no region, the whole clip is saved.
 - **Curate.** Tick the keepers and save them to a folder; delete the rest to
   the macOS Trash.
+- **Built-in guide.** A collapsible panel covers the faders, prompt tips, and
+  keeping vs binning clips.
 - **Matched levels.** Every clip is loudness-normalised on generation, so
   drums and synths come out at a consistent volume.
 
@@ -115,6 +118,9 @@ LOOP_LAB_KEEPERS="$HOME/Dropbox/Loops" python loop_lab.py
 - The four faders are deliberately simple mappings onto the two sampling
   controls the CLI exposes (`--temperature`, `--top-k`) plus count and duration.
   Tweak the ranges in `map_settings()` if they don't suit your material.
+- The in-app region loop uses an audio-element seek at the loop point, so there
+  is a tiny gap each cycle — fine for auditioning. The saved crop is gapless and
+  sample-accurate.
 
 ## Licence
 
