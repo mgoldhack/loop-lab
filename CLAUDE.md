@@ -31,4 +31,6 @@ Magenta itself.
 - Loops are generated per-prompt at varied temperature so a batch actually
   differs (the model uses a fixed seed).
 - Demo video editing is done in ScreenKite (see SESSION_LOG for the promo-card
-  work and the trailing-overlay limitation).
+  work and the trailing-overlay limitation). Captions were added *outside*
+  ScreenKite via headless-Chrome PNGs + `ffmpeg overlay` (this ffmpeg has no
+  drawtext/libass) — see memory `video-captioning-ffmpeg`.

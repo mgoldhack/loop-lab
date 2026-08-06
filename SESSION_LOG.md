@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-07-31 (cont.) — Crop-end loop fix, mrt 2.0.3, captioned demo video
+
+**Files changed:**
+- `loop_lab.py` — **fix:** a crop region whose right edge sits at the very end of the clip now loops. Root cause: with a region set, playback runs `loop=false` and `timeupdate` never fires `currentTime >= end` at the exact end, so it played once and stopped; added an `ended` handler that restarts from the region start. Committed `e3cb9fd`.
+- `README.md` — demo link now points to the **captioned** YouTube video (`p-8k2D1gDCQ`), starting at 0:00. Committed `4636348`.
+- `docs/loop-lab-demo-captioned.mp4` — **not committed** (`*.mp4` is gitignored by repo convention; the demo lives on YouTube). Built by overlaying 6 brand-styled caption PNGs (rendered via headless Chrome, transparent bg) onto the demo with `ffmpeg`. This `ffmpeg` has **no `drawtext`/`subtitles`/libass**, so the PNG-overlay + `ffmpeg overlay`/`fade` route is the caption path here (ScreenKite was avoided — prior difficulties).
+
+**Env / external (not repo):**
+- Upgraded `magenta-rt` **2.0.2 → 2.0.3** in the mrt venv via `uv` (venv has no pip). Verified the `mrt` CLI loads and every flag Loop Lab calls (`--prompt/--model/--duration/--temperature/--top-k/--cfg-musiccoca`) is present.
+- Shared Loop Lab in the Magenta RealTime GitHub Discussions (Show and tell).
+- Uploaded the captioned demo to YouTube (https://youtu.be/p-8k2D1gDCQ) with chapters + description.
+
+**Still to do:**
+- `docs/index.html` pre-session uncommitted edit still left alone.
+
 ## 2026-07-31 — Region crop-loop, guide panel, delete-selected, UI polish; docs + push
 
 **Files changed:**
