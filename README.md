@@ -16,9 +16,9 @@ A 2½-minute walkthrough — generating loops from two prompts ("Liquid 909" and
 "Gangster Rap"), auditioning them, and saving the keepers:
 
 [![A prompt box, four faders (outputs, length, randomness, complexity), and a
-list of generated loops with waveforms.](docs/screenshot.png)](https://www.youtube.com/watch?v=P4C_2XStpJY&t=4s)
+list of generated loops with waveforms.](docs/screenshot.png)](https://www.youtube.com/watch?v=p-8k2D1gDCQ)
 
-▶ **[Watch the demo on YouTube](https://www.youtube.com/watch?v=P4C_2XStpJY&t=4s)** (or click the image above).
+▶ **[Watch the demo on YouTube](https://www.youtube.com/watch?v=p-8k2D1gDCQ)** (or click the image above).
 
 ## What it does
 
